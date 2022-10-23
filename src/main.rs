@@ -1,6 +1,6 @@
 pub mod dice;
 
-pub use dice::{OneDie, Pool};
+pub use dice::Pool;
 
 fn main() {
     println!("Pool: {:?}", Pool::new(6, 3))
