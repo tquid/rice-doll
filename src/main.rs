@@ -1,14 +1,13 @@
 pub mod dice;
 
-pub use dice::{Face, Pool};
+pub use dice::{mould_int_die as d, Pool};
 
 fn main() {
-    println!("Pool: {:?}", Pool::new(vec!(vec!(
-        Face(1, "1".to_string()),
-        Face(2, "2".to_string()),
-        Face(3, "3".to_string()),
-        Face(4, "4".to_string()),
-        Face(5, "5".to_string()),
-        Face(6, "6".to_string()),
-    ))));
+    println!("Pool: {:?}", Pool::new(vec!(
+        d(6),
+        d(8),
+        d(10),
+        d(12),
+        d(20)
+    )));
 }
