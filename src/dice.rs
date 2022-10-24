@@ -1,14 +1,14 @@
-use core::num;
+use core::fmt::{Display, Formatter, Result};
 
 use rand::{thread_rng, Rng};
 
-fn rand_uint(n: u32) -> u32 {
+fn rand_uint(n: usize) -> usize {
     let mut rng = thread_rng();
     rng.gen_range(0..n)
 }
 
-pub fn explode_roll(faces: &Vec<Face>) -> Dice {
-    let max: u32 = faces.len() as u32;
+fn explode_roll(faces: &Vec<Face>) -> Dice {
+    let max: usize = faces.len();
     let mut dice: Vec<Die> = vec!();
     loop {
         let face_index = rand_uint(max);
@@ -17,15 +17,12 @@ pub fn explode_roll(faces: &Vec<Face>) -> Dice {
             face_index,
         };
         dice.push(new_die);
-        if face_index != max {
+        if face_index + 1 != max {
             break;
         }
+        println!("Pop!");
     }
-    if dice.len() == 1 {
-        Dice::One(&dice[0])
-    } else {
-        Dice::Many(dice)
-    }
+    Dice(dice)
 }
 
 pub fn mould_int_die(num_faces: i32) -> Vec<Face> {
@@ -47,7 +44,7 @@ trait Roll {
 #[derive(Debug)]
 struct Die {
     faces: Vec<Face>,
-    face_index: u32,
+    face_index: usize,
 }
 
 impl Die {
@@ -57,10 +54,7 @@ impl Die {
 }
 
 #[derive(Debug)]
-enum Dice {
-    One(Die),
-    Many(Vec<Die>),
-}
+struct Dice (Vec<Die>);
 
 #[derive(Debug)]
 pub struct Pool {
@@ -76,5 +70,35 @@ impl Pool {
         Self {
             dice: rolls,
         }
+    }
+}
+
+impl Display for Die {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        write!(f, "d{}: {}", self.faces.len(), self.faces[self.face_index].1)
+    }
+}
+
+impl Display for Dice {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        let mut output: Vec<String> = vec!();
+        for die in &self.0 {
+            output.push(std::format!("{}", die));
+        }
+        if output.len() == 1 {
+            write!(f, "{}", output[0])
+        } else {
+            write!(f, "[{}]", output.join(", "))
+        }
+    }
+}
+
+impl Display for Pool {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result {
+        let mut output: Vec<String> = vec!();
+        for dice in &self.dice {
+            output.push(std::format!("{}", dice));
+        }
+        write!(f, "{}", output.join(", "))
     }
 }
