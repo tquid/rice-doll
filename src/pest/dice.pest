@@ -1,0 +1,14 @@
+num = { ASCII_DIGIT+ }
+whitespace = _{ (" " | "\t")+ }
+die_type = @{ ASCII_ALPHA+ }
+filter = { "<" | ">" | "=" }
+operation = { "+" | "." | "#" }
+modifier = { filter ~ num ~ operation }
+roll = { num ~ ((die_type ~ num ~ modifier?) | die_def) }
+roll_command = { SOI ~ "roll" ~ whitespace ~ roll ~ ( whitespace+ ~ roll )* ~ EOI }
+
+// Dice definitions for more exotic varieties
+// Literally anything except '[', ']', or whitespace
+not_brackets_or_space = { !("[" | "]" | whitespace) ~ ANY }
+die_face = @{ not_brackets_or_space+ }
+die_def = { "[" ~ whitespace* ~ die_face ~ (whitespace ~ die_face)* ~ whitespace* ~ "]" }

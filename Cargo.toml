@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 rand = "0.8.5"
+pest = "2.4.0"
+pest_derive = "2.4.0"
