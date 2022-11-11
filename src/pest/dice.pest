@@ -3,8 +3,8 @@ die_type = @{ ASCII_ALPHA+ }
 filter = { "<" | ">" | "=" }
 WHITESPACE = _{ " "+ | "\t"+ }
 operation = { "+" | "." | "#" }
-modifier = @{ filter ~ num ~ operation }
-specifier = @{die_type ~ num ~ modifier?}
+modifier = ${ filter ~ num ~ operation }
+specifier = ${ die_type ~ num ~ modifier? }
 roll = { num ~ (specifier | die_def) }
 roll_command = { SOI ~ "roll" ~ roll+ ~ EOI }
 legal_commands = _{ roll_command }

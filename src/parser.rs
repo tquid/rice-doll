@@ -15,18 +15,6 @@ pub fn print_pair(pair: &Pair<Rule>) {
     println!("Text:       {}", pair.as_str());
     println!("----------------");
 }
-// pub fn print_pair(pairs: &Pair<Rule>) {
-//     print_pair(pair);
-//     for inner_pair in pairs.into_inner() {
-//         print_pair(&inner_pair);
-//         for inner_inner_pair in inner_pair.into_inner() {
-//             print_pair(&inner_inner_pair);
-//             for inner_inner_inner_pair in inner_inner_pair.into_inner() {
-//                 print_pair(&inner_inner_inner_pair);
-//             }
-//         }
-//     }
-// }
 
 pub fn parse() {
     let pairs = DiceParser::parse(Rule::command, "roll 3d6=6# 100d10 1[* 2 3 4 5 +]")
