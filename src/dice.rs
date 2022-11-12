@@ -33,6 +33,10 @@ pub fn mould_int_die(num_faces: i32) -> Vec<Face> {
     faces
 }
 
+pub fn mould_custom_die(face_strs: Vec<&str>) -> Vec<Face> {
+    face_strs.iter().enumerate().map(|i: i32, face: &str| (i, face));
+}
+
 #[derive(Debug, Clone)]
 pub struct Face (pub i32, pub String);
 

@@ -1,6 +1,8 @@
+use crate::dice::Pool;
 use pest::{
     iterators::{Pair, Pairs},
     Parser,
+    error::Error,
 };
 use pest_derive::Parser;
 use std::process::exit;
@@ -16,21 +18,26 @@ pub fn print_pair(pair: &Pair<Rule>) {
     println!("----------------");
 }
 
-pub fn parse() {
-    let pairs = DiceParser::parse(Rule::command, "roll 3d6=6# 100d10 1[* 2 3 4 5 +]")
+pub fn parse_command(text: &str) -> Result<Roll, Error<Rule>> {
+    let pairs = DiceParser::parse(Rule::command, text)
         .unwrap_or_else(|e| {
             println!("{}", e);
             exit(0)
         });
-    println!("{:}", pairs);
-    for pair in pairs {
-        println!("{}", pair)
-    }
-}
+    
+    fn parse_value(pair: Pair<Rule>) -> Roll {
+        match pair.as_rule() {
+            // Don't care about command or roll_command yet, so just keep parsing
+            Rule::command => pair.into_inner()
+                .map(|pair| { parse_value(pair) }),
+            Rule::roll_command => 
+            Rule::dice => Pool.new(pair.into_inner()
+                .map(|pair| {
 
-/*
-pub enum Command {
-    Roll,
+                }))
+        }
+    }
+    println!("{:}", pairs);
 }
 
 pub enum Roll {
@@ -56,4 +63,3 @@ pub enum Filter {
     GreaterThan,
     Equal,
 }
-*/

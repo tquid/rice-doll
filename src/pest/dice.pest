@@ -5,8 +5,8 @@ WHITESPACE = _{ " "+ | "\t"+ }
 operation = { "+" | "." | "#" }
 modifier = ${ filter ~ num ~ operation }
 specifier = ${ die_type ~ num ~ modifier? }
-roll = { num ~ (specifier | die_def) }
-roll_command = { SOI ~ "roll" ~ roll+ ~ EOI }
+dice = { num ~ (specifier | die_def) }
+roll_command = { SOI ~ "roll" ~ dice+ ~ EOI }
 legal_commands = _{ roll_command }
 command = { legal_commands }
 
