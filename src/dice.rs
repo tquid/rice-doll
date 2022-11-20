@@ -1,5 +1,4 @@
 use core::fmt::{Display, Formatter, Result};
-use std::rc::Rc;
 
 use rand::{seq::SliceRandom, thread_rng, Rng};
 
@@ -41,15 +40,32 @@ trait Roll {
     fn roll(&self) -> Self;
 }
 
-struct Die<'die, 'face> {
+struct DieBuilder {
     faces: Vec<Face>,
-    shown_face: Option<&'face Face>,
-    next_die: Option<Box<Die<'die, 'face>>>,
+    shown_face: Option<Face>,
+    next_die: Option<Box<Die>>,
+    roll_fn: Option<Box<dyn Fn(&Self) -> &Self>>,
+}
+
+impl DieBuilder {
+    fn new(faces: Vec<Face>) -> Self {
+        Self {
+            faces,
+            shown_face: None,
+            next_die: None,
+            roll_fn: None,
+        }
+    }
+}
+struct Die {
+    faces: Vec<Face>,
+    shown_face: Face,
+    next_die: Option<Box<Die>>,
     roll_fn: Box<dyn Fn(&Self) -> &Self>,
 }
 
-impl<'die, 'face> Die<'die, 'face> {
-    fn new(faces: Vec<Face>, roll_fn: Box<dyn Fn(&Die) -> &'die Die<'die, 'face>>) -> Self {
+impl<'die> Die<'die, 'die> {
+    fn new(faces: Vec<Face>, roll_fn: Box<dyn Fn(&Die) -> &'die Die<'die, 'die>>) -> Self {
         Die {
             faces,
             shown_face: None,
@@ -63,7 +79,7 @@ pub struct Pool<'pool, 'dice> {
     dice: Vec<Die<'pool, 'dice>>,
 }
 
-impl<'pool, 'dice> Pool<'pool, 'dice> {
+impl<'pool> Pool<'pool, 'pool> {
     pub fn new(dice: Vec<Die>>) -> Self {
         let mut rolls: Vec<Die> = vec!();
         for die in dice {
