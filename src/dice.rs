@@ -1,4 +1,4 @@
-use rand::{seq::SliceRandom, thread_rng, Rng};
+use rand::{seq::SliceRandom, thread_rng};
 
 type DieValue = i16;
 type DieSize = usize;
@@ -9,6 +9,7 @@ pub struct Face {
     value: DieValue,
 }
 
+// Creates a "sign" (printable representation) and value to apply to a Die
 impl Face {
     fn new(sign: String, value: DieValue) -> Self {
         Self { sign, value }
@@ -25,9 +26,8 @@ pub struct Die {
     shown_face: Option<Face>,
 }
 
-// Die::new(Vec<Face>) to create a fully custom die with arbitrary signs and
-// values
 impl Die {
+    // Completely arbitrary die with any Faces
     pub fn new(faces: Vec<Face>) -> Self {
         Self {
             faces,
@@ -35,6 +35,7 @@ impl Die {
         }
     }
 
+    // Typical die with integer sides and values
     pub fn range(numbers: Vec<DieValue>) -> Self {
         let mut faces = Vec::<Face>::new();
         for n in numbers {
@@ -46,13 +47,14 @@ impl Die {
         }
     }
 
+    // Even more typical die numbered 1..n, incrementing by 1
     pub fn int(size: DieSize) -> Self {
-        let sides: Vec<DieValue> = (1..(size + 1) as DieValue).collect();
+        let sides: Vec<DieValue> = (1..=size as DieValue).collect();
         Die::range(sides)
     }
 
     pub fn roll(&mut self)  -> &mut Self {
-        self.shown_face = self.faces.choose(&mut rand::thread_rng()).cloned();
+        self.shown_face = self.faces.choose(&mut thread_rng()).cloned();
         self
     }
 
@@ -66,9 +68,10 @@ impl Die {
 
     pub fn get_faces(&self) -> &Vec<Face> {
         self.faces.as_ref()
+    pub fn get_faces(&self) -> &Vec<Face> {
+        self.faces.as_ref()
     }
 }
-
 
 #[cfg(test)]
 pub mod test {
