@@ -68,8 +68,6 @@ impl Die {
 
     pub fn get_faces(&self) -> &Vec<Face> {
         self.faces.as_ref()
-    pub fn get_faces(&self) -> &Vec<Face> {
-        self.faces.as_ref()
     }
 }
 
