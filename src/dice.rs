@@ -81,7 +81,7 @@ pub mod test {
     }
 
     #[test]
-    pub fn correct_die_from_integer() -> () {
+    pub fn correct_die_from_integer() {
         let d6 = Die::int(6);
         assert!(d6.get_faces() == &vec![Face { sign: "1".to_owned(), value: 1 },
                                         Face { sign: "2".to_owned(), value: 2 },

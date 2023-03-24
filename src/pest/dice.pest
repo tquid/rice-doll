@@ -1,17 +1,16 @@
-num = @{ ASCII_DIGIT+ }
-die_type = @{ ASCII_ALPHA+ }
-filter = { "<" | ">" | "=" }
-WHITESPACE = _{ " "+ | "\t"+ }
-operation = { "+" | "." | "#" }
-modifier = ${ filter ~ num ~ operation }
-specifier = ${ die_type ~ num ~ modifier? }
-roll = { num ~ (specifier | die_def) }
-roll_command = { SOI ~ "roll" ~ roll+ ~ EOI }
+num            = @{ ASCII_DIGIT+ }
+die_type       = @{ ASCII_ALPHA+ }
+operation      = { "kh" | "kl" | "+" }
+WHITESPACE     = _{ " "+ | "\t"+ }
+modifier       = ${ operation ~ num? }
+specifier      = ${ ((die_type ~ num) | die_def) ~ modifier? }
+roll           = { num ~ (specifier | die_def) }
+roll_command   = { SOI ~ "roll" ~ roll+ ~ EOI }
 legal_commands = _{ roll_command }
-command = { legal_commands }
+command        = { legal_commands }
 
 // Dice definitions for more exotic varieties
 // Literally anything except '[', ']', or whitespace
 not_brackets_or_space = _{ !("[" | "]" | WHITESPACE) ~ ANY }
-die_face = @{ not_brackets_or_space+ }
-die_def = { "[" ~ die_face+ ~ "]" }
+die_face              = @{ not_brackets_or_space+ }
+die_def               = !{ "[" ~ die_face+ ~ "]" }
