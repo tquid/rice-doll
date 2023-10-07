@@ -52,10 +52,6 @@ func NewIntDie(size DieSize) *Die {
 }
 
 func (d *Die) Roll() *Die {
-<<<<<<< HEAD
-	rand.Seed(time.Now().UnixNano())
-=======
->>>>>>> fb2a02e (Start of a parser)
 	d.shownFace = &d.faces[rand.Intn(len(d.faces))]
 	return d
 }
