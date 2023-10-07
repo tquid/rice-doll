@@ -4,7 +4,10 @@ import (
 	"fmt"
 	"math/rand"
 	"strconv"
+<<<<<<< HEAD
 	"time"
+=======
+>>>>>>> fb2a02e (Start of a parser)
 )
 
 type DieValue int16
@@ -53,7 +56,10 @@ func NewIntDie(size DieSize) *Die {
 }
 
 func (d *Die) Roll() *Die {
+<<<<<<< HEAD
 	rand.Seed(time.Now().UnixNano())
+=======
+>>>>>>> fb2a02e (Start of a parser)
 	d.shownFace = &d.faces[rand.Intn(len(d.faces))]
 	return d
 }
@@ -71,7 +77,20 @@ func (d *Die) GetFaces() []Face {
 }
 
 func main() {
+<<<<<<< HEAD
 	fmt.Println("Testing")
 	d := NewIntDie(6)
 	fmt.Println(d)
+=======
+	goofyFaces := []Face{
+		{"😃", 0},
+		{"😄", 1},
+		{"😁", 2},
+		{"😆", 3},
+		{"😅", 4},
+		{"😂", 5},
+	}
+	d := NewDie(goofyFaces)
+	fmt.Printf("Got a die with %d sides with a roll showing %s, and a value of %d\n", d.GetSize(), d.Roll().GetShownFace().sign, d.Roll().GetShownFace().value)
+>>>>>>> fb2a02e (Start of a parser)
 }
