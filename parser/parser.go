@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	"bufio"
@@ -19,7 +19,7 @@ const (
 	CLOSE_BRACKET  // "]"
 	D              // "d" or "D"
 	DIE_DEFINITION // Freeform definition in brackets, e.g. "[1,2,3,4,5,6]"
-	DIE_FACE       // Just "1" or potentially "😎:0", "😅:1", "🌟:3", etc.
+	DIE_FACE       // Just "2" or potentially "😎:0", "😅:1", "🌟:3", etc.
 	EXPLODE        // "!", indicating a die should be rolled again if it rolls its maximum value
 	KEEP_HIGH      // "kh" optionally followed by a NUMBER, indicating the highest n dice should be kept
 	KEEP_LOW       // "kl" optionally followed by a NUMBER, indicating the lowest n dice should be kept

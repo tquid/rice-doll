@@ -1,4 +1,4 @@
-# rice-doll - yet another dice roller, this time using Rust and Pest
+# rice-doll - yet another dice roller
 
 This project's focus is more on representing the state of the dice themselves,
 rather than the various ways of interpreting any given roll (though there

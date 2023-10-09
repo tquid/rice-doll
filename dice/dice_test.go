@@ -1,4 +1,4 @@
-package main
+package dice
 
 import "testing"
 
@@ -20,14 +20,13 @@ func TestCorrectDieFromInteger(t *testing.T) {
 		{"6", 6},
 	}
 
-	if len(d6.GetFaces()) != len(expected) {
-		t.Errorf("Expected %v, got %v", expected, d6.GetFaces())
+	if len(d6.Faces) != len(expected) {
+		t.Errorf("Expected %v, got %v", expected, d6.Faces)
 		return
 	}
-
-	for i, face := range d6.GetFaces() {
-		if face.sign != expected[i].sign || face.value != expected[i].value {
-			t.Errorf("Expected %v, got %v", expected, d6.GetFaces())
+	for i, face := range d6.Faces {
+		if face.Glyph != expected[i].Glyph || face.Value != expected[i].Value {
+			t.Errorf("Expected %v, got %v", expected, d6.Faces)
 			return
 		}
 	}
