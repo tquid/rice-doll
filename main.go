@@ -22,11 +22,15 @@ func main() {
 	dice.BasicRoll(d)
 	fmt.Printf("Got a die with %d sides with a roll showing %s, and a value of %d\n", d.GetSize(), d.ShownFace.Glyph, d.ShownFace.Value)
 	// create a slice of five new dice
-	d8s := make(dice.Hand, 5)
+	h := make(dice.Hand, 5)
 	// fill the slice with new dice
-	for i := range d8s {
-		d8s[i] = *dice.NewIntDie(8)
+	for i := range h {
+		h[i] = *dice.NewIntDie(8)
 	}
-	dice.ExplodingRoll(&d8s)
-	fmt.Printf("Explodey rolled: %s\n", d8s)
+	for i := 0; i < 5; i++ {
+		h = append(h, *dice.NewIntDie(4))
+	}
+	h = append(h, *dice.NewDie("goofy", goofyFaces))
+	dice.ExplodingRoll(&h)
+	fmt.Printf("Explodey rolled: %s\n", h)
 }

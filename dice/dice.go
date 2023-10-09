@@ -128,9 +128,10 @@ func ExplodingRoll(h *Hand) {
 		BasicRoll(&d)
 		newHand = append(newHand, d)
 		for d.ShownFace.Value == d.GetMaxValue() {
-			newDie := *NewIntDie(d.GetSize()) // create a new d6 die
-			BasicRoll(&newDie)                // roll it
-			newHand = append(newHand, newDie) // add it to the hand
+			// NOTE that this shallow copy means the Faces slice is shared
+			newDie := *NewDie(d.Name, d.Faces)
+			BasicRoll(&newDie)
+			newHand = append(newHand, newDie)
 			d = newDie
 		}
 	}
