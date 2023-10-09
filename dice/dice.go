@@ -10,19 +10,11 @@ import (
 
 type DieValue int16
 type DieSize int
+type RollFunc func(d *Die) Hand
 
 type Face struct {
 	Glyph string
 	Value DieValue
-}
-
-// Creates a "glyph" (printable representation) and value to apply to a Die
-func NewFace(glyph string, value DieValue) Face {
-	return Face{glyph, value}
-}
-
-func IntFace(value DieValue) Face {
-	return Face{strconv.Itoa(int(value)), value}
 }
 
 type Die struct {
@@ -33,13 +25,34 @@ type Die struct {
 
 type Hand []Die
 
+// Creates a "glyph" (printable representation) and value to apply to a Die
+func NewFace(glyph string, value DieValue) Face {
+	return Face{glyph, value}
+}
+
+func IntFace(value DieValue) Face {
+	return Face{strconv.Itoa(int(value)), value}
+}
+
+func NewHand(dice ...Die) Hand {
+	return dice
+}
+
+func RollHand(h Hand, rf RollFunc) Hand {
+	for i := range h {
+		h[i].Roll(rf)
+	}
+	return h
+}
+
 func (dv DieValue) String() string {
 	return strconv.Itoa(int(dv))
 }
 
 func (d *Die) String() string {
 	if d.ShownFace != nil {
-		return fmt.Sprintf("%d", d.ShownFace.Value) // or any other representation you like
+		// return fmt.Sprintf("%d", d.ShownFace.Value)
+		return fmt.Sprintf("%s:%s", d.Name, d.ShownFace.Glyph)
 	}
 	return "Not rolled yet"
 }
@@ -98,21 +111,29 @@ func (d *Die) GetMaxValue() DieValue {
 	return d.Faces[len(d.Faces)-1].Value
 }
 
-func (d *Die) Roll(strategy func(*Die) []Die) []Die {
-	return strategy(d)
+func (d *Die) Roll(rf RollFunc) []Die {
+	return rf(d)
 }
 
-func BasicRoll(d *Die) []Die {
+func BasicRoll(d *Die) {
 	d.ShownFace = &d.Faces[rand.Intn(len(d.Faces))]
-	return []Die{*d}
+	return
 }
 
-func ExplodingRoll(d *Die) []Die {
-	hand := d.Roll(BasicRoll)
-	if d.ShownFace.Value == d.GetMaxValue() {
-		fmt.Println("Exploding!")
-		hand = append(hand, *d)
-		d.Roll(ExplodingRoll)
+// We take a Hand, not a Die, for an exploding roll, since we may add dice to
+// the hand
+func ExplodingRoll(h *Hand) {
+	newHand := NewHand()
+	for _, d := range *h {
+		BasicRoll(&d)
+		newHand = append(newHand, d)
+		for d.ShownFace.Value == d.GetMaxValue() {
+			newDie := *NewIntDie(d.GetSize()) // create a new d6 die
+			BasicRoll(&newDie)                // roll it
+			newHand = append(newHand, newDie) // add it to the hand
+			d = newDie
+		}
 	}
-	return hand
+	*h = newHand
+	return
 }
