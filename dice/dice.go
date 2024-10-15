@@ -17,10 +17,33 @@ type Face struct {
 	Value DieValue
 }
 
+type Roller interface {
+	Roll(d *Die) Hand
+}
+
+type Faces []Face
+
+func (f Faces) randomPick() *Face {
+	return &f[rand.Intn(len(f))]
+}
+
 type Die struct {
-	Name      string
-	Faces     []Face
+	// A short name, e.g. "D6"
+	Name string
+	// A longer description, e.g. "Genesys Proficiency die"
+	Description string
+	// Each face of the die with a glyph (visual representation) and a value
+	faces Faces
+	// The face currently "facing up"
 	ShownFace *Face
+	// A function to roll the die
+	Roller Roller
+}
+
+func (d *Die) Clone() *Die {
+	newFaces := make(Faces, len(d.faces))
+	copy(newFaces, d.faces)
+	return &Die{Name: d.Name, faces: newFaces, Roller: d.Roller}
 }
 
 type Hand []Die
@@ -38,9 +61,9 @@ func NewHand(dice ...Die) Hand {
 	return dice
 }
 
-func RollHand(h Hand, rf RollFunc) Hand {
+func (h Hand) Roll() Hand {
 	for i := range h {
-		h[i].Roll(rf)
+		h[i].Roll()
 	}
 	return h
 }
@@ -70,71 +93,112 @@ func (h Hand) String() string {
 	return builder.String()
 }
 
+type NewDieParams struct {
+	Name        string
+	Description string
+	Faces       Faces
+	Roller      Roller
+}
+
 // Completely arbitrary die with any Faces
-func NewDie(name string, faces []Face) *Die {
-	d := &Die{name, faces, nil}
+func NewDie(p NewDieParams) (*Die, error) {
+	if len(p.Faces) == 0 {
+		return nil, fmt.Errorf("creating a die with no faces is not allowed")
+	}
+	if p.Roller == nil {
+		p.Roller = BasicRoller{}
+	}
+	d := &Die{
+		Name:        p.Name,
+		Description: p.Description,
+		faces:       p.Faces,
+		Roller:      p.Roller,
+	}
 	d.sortFaces()
-	return d
+	d.ShownFace = d.faces.randomPick()
+	return d, nil
 }
 
 // Typical die with integer sides and values
-func NewRangeDie(name string, numbers []DieValue) *Die {
-	faces := make([]Face, len(numbers))
+func NewRangeDie(name string, numbers []DieValue) (*Die, error) {
+	faces := make(Faces, len(numbers))
+	var builder strings.Builder
 	for i, n := range numbers {
-		faces[i] = IntFace(n)
+		face := IntFace(n)
+		faces[i] = face
+		builder.WriteString(face.Glyph)
+		if i < len(numbers)-1 {
+			builder.WriteString(", ")
+		}
 	}
-	return NewDie(name, faces)
+	nd, err := NewDie(NewDieParams{
+		Name:        name,
+		Description: fmt.Sprintf("D%d numbered %s", len(numbers), builder.String()),
+		Faces:       faces,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("can't create new RangeDie: %w", err)
+	}
+	return nd, nil
 }
 
 // Even more typical die numbered 1..n, incrementing by 1
-func NewIntDie(size DieSize) *Die {
+func NewIntDie(size DieSize) (*Die, error) {
+	if int(size) == 0 {
+		return nil, fmt.Errorf("can't make a die with no faces")
+	}
 	sides := make([]DieValue, size)
 	for i := 0; i < int(size); i++ {
 		sides[i] = DieValue(i + 1)
 	}
-	name := fmt.Sprintf("d%d", size)
-	return NewRangeDie(name, sides)
+	name := fmt.Sprintf("D%d", size)
+	die, err := NewRangeDie(name, sides)
+	if err != nil {
+		return nil, fmt.Errorf("can't create new IntDie: %w", err)
+	}
+	return die, nil
 }
 
 func (d *Die) GetSize() DieSize {
-	return DieSize(len(d.Faces))
+	return DieSize(len(d.faces))
 }
 
 // Sorts the faces of the die in ascending order by value
 func (d *Die) sortFaces() {
-	sort.Slice(d.Faces, func(i, j int) bool {
-		return d.Faces[i].Value < d.Faces[j].Value
+	sort.Slice(d.faces, func(i, j int) bool {
+		return d.faces[i].Value < d.faces[j].Value
 	})
 }
 
 func (d *Die) GetMaxValue() DieValue {
-	return d.Faces[len(d.Faces)-1].Value
+	return d.faces[len(d.faces)-1].Value
 }
 
-func (d *Die) Roll(rf RollFunc) []Die {
-	return rf(d)
+func (d *Die) Roll() Hand {
+	return d.Roller.Roll(d)
 }
 
-func BasicRoll(d *Die) {
-	d.ShownFace = &d.Faces[rand.Intn(len(d.Faces))]
-	return
+type BasicRoller struct{}
+
+func (r BasicRoller) Roll(d *Die) Hand {
+	d.ShownFace = d.faces.randomPick()
+	return Hand{*d}
 }
 
-// We take a Hand, not a Die, for an exploding roll, since we may add dice to
-// the hand
-func ExplodingRoll(h *Hand) {
-	newHand := NewHand()
-	for _, d := range *h {
-		BasicRoll(&d)
-		newHand = append(newHand, d)
-		for d.ShownFace.Value == d.GetMaxValue() {
-			// NOTE that this shallow copy means the Faces slice is shared
-			newDie := *NewDie(d.Name, d.Faces)
-			BasicRoll(&newDie)
-			newHand = append(newHand, newDie)
-			d = newDie
-		}
+type ExplodingRoller struct{}
+
+func (r ExplodingRoller) Roll(d *Die) Hand {
+	var hand Hand
+	// Initial roll to get things started
+	d.ShownFace = d.faces.randomPick()
+	hand = append(hand, *d)
+
+	for d.ShownFace.Value == d.GetMaxValue() {
+		newDie := d.Clone()
+		newDie.Roller = r
+		newDie.Roll()
+		hand = append(hand, *newDie)
+		d = newDie
 	}
-	*h = newHand
-	return
+	return hand
 }
